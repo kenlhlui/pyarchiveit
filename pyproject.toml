@@ -1,6 +1,6 @@
 [project]
 name = "pyarchiveit"
-version = "0.3.2"
+version = "0.3.3"
 description = "A Python library to interact with the Archive-It's API"
 readme = "README.md"
 authors = [
@@ -25,6 +25,9 @@ ignore = [
 
 [project.urls]
 Repository = "https://github.com/kenlhlui/pyarchiveit"
+Homepage = "https://kenlhlui.github.io/pyarchiveit/"
+Documentation = "https://kenlhlui.github.io/pyarchiveit/"
+Changelog = "https://github.com/kenlhlui/pyarchiveit/releases"
 
 [project.optional-dependencies]
 docs = [
