@@ -23,7 +23,7 @@ uv add pyarchiveit
 
 First, you will need to initialize the Archive-it API client with your account credentials.
 ```python
-from pyarchiveit.api import ArchiveItAPI
+from pyarchiveit import ArchiveItAPI
 
 # Initialize the Archive-it API client with your credentials
 archive_it_client = ArchiveItAPI(
