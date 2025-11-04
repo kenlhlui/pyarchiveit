@@ -79,7 +79,11 @@ class HTTPXClient:
         return response
 
     def post(
-        self, endpoint: str, data: dict | None = None, timeout: float | None = None
+        self,
+        endpoint: str,
+        data: dict | None = None,
+        timeout: float | None = None,
+        headers: dict | None = None,
     ) -> httpx.Response:
         """Send a POST request to the specified endpoint.
 

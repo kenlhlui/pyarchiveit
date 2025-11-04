@@ -3,6 +3,7 @@
 import logging
 
 from .httpx_client import HTTPXClient
+from .utils import is_valid_metadata_structure
 
 logger = logging.getLogger(__name__)
 
@@ -106,3 +107,36 @@ class ArchiveItAPI:
                 raise
 
         return all_seeds
+
+    def update_seed_metadata(
+        self,
+        seed_id: str | int,
+        metadata: dict,
+    ) -> None:
+        """Update metadata for a specific seed.
+
+        Args:
+            seed_id (str | int): The ID of the seed to update.
+            metadata (dict): The metadata to update for the seed.
+
+        """
+        logger.info(f"Updating metadata for seed ID: {seed_id}")
+
+        # Check whether the key after the first key start with 'value' or else reject
+        all_have_value = is_valid_metadata_structure(metadata)
+        if not all_have_value:
+            msg = 'Each metadata list item must be a dict containing a "value" key.'
+            logger.error(
+                f"Invalid metadata structure for seed ID {seed_id}: {metadata}"
+            )
+            raise ValueError(msg)
+
+        try:
+            self.http_client.patch(
+                f"seed/{seed_id}",
+                data={"metadata": metadata},
+            )
+            logger.info(f"Successfully updated metadata for seed ID: {seed_id}")
+        except Exception as e:
+            logger.error(f"Failed to update metadata for seed ID {seed_id}: {e}")
+            raise
