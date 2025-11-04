@@ -140,3 +140,78 @@ class ArchiveItAPI:
         except Exception as e:
             logger.error(f"Failed to update metadata for seed ID {seed_id}: {e}")
             raise
+
+    def create_seed(
+        self,
+        url: str,
+        collection_id: str | int,
+        crawl_definition_id: str | int,
+        other_params: dict | None = None,
+        metadata: dict | None = None,
+    ) -> dict:
+        """Create a new seed in a specified collection with given crawl definition.
+
+        Args:
+            url (str): The URL of the seed to create.
+            collection_id (str | int): The ID of the collection to add the seed to.
+            crawl_definition_id (str | int): The ID of the crawl definition to associate with the seed.
+            other_params (dict | None): Additional parameters for the seed creation.
+            metadata (dict | None): Metadata to set for the seed after creation.
+
+        Returns:
+            dict: The created seed data returned by the API.
+
+        """
+        logger.info(f"Creating new seed in collection ID: {collection_id}")
+
+        payload = {
+            "url": url,
+            "collection": collection_id,
+            "crawl_definition": crawl_definition_id,
+        }
+
+        # Handle metadata from other_params
+        if other_params:
+            if "metadata" in other_params:
+                other_params_metadata = other_params["metadata"]
+                other_params.pop("metadata")  # Remove metadata from other_params
+                # Combine with metadata parameter if provided
+                if metadata:
+                    metadata.update(other_params_metadata)
+                else:
+                    metadata = other_params_metadata
+            payload.update(other_params)
+
+        # Validate metadata structure if provided
+        if metadata and not is_valid_metadata_structure(metadata):
+            logger.error(
+                f"Invalid metadata structure for seed creation in collection ID {collection_id}: {metadata}"
+            )
+            msg = 'Each metadata list item must be a dict containing a "value" key.'
+            raise ValueError(msg)
+
+        try:
+            response = self.http_client.post(
+                "seed",
+                data=payload,
+            )
+            seed_data = response.json()
+            logger.debug(f"Response from seed creation: {seed_data}")
+            logger.info(f"Successfully created seed in collection ID: {collection_id}")
+
+            # If metadata is provided, update it after seed creation
+            if metadata:
+                seed_id = seed_data.get("id")
+                if seed_id:
+                    logger.info(f"Updating metadata for newly created seed ID: {seed_id}")
+                    self.update_seed_metadata(seed_id=seed_id, metadata=metadata)
+                    # Refresh seed_data to include updated metadata
+                    seed_data["metadata"] = metadata
+                else:
+                    logger.warning("Seed created but no ID returned, cannot update metadata")
+
+            return seed_data
+
+        except Exception as e:
+            logger.error(f"Failed to create seed in collection ID {collection_id}: {e}")
+            raise
