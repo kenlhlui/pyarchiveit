@@ -11,4 +11,3 @@ The main client class for interacting with the Archive-it API.
       show_source: false
       members_order: source
       heading_level: 2
-      show_docstring_description: false
