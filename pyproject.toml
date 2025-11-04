@@ -1,6 +1,6 @@
 [project]
 name = "pyarchiveit"
-version = "0.2.0"
+version = "0.3.2"
 description = "A Python library to interact with the Archive-It's API"
 readme = "README.md"
 authors = [
