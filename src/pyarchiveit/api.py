@@ -16,7 +16,7 @@ class ArchiveItAPI:
         account_name: str,
         account_password: str,
         base_url: str = "https://partner.archive-it.org/api/",
-        default_timeout: float | None = 30.0,
+        default_timeout: float | None = None,
     ) -> None:
         """Initialize the ArchiveItAPI client with authentication and base URL.
 
@@ -24,7 +24,7 @@ class ArchiveItAPI:
             account_name (str): The account name for authentication.
             account_password (str): The account password for authentication.
             base_url (str): The base URL for the API endpoints. Defaults to Archive-it API base URL.
-            default_timeout (float | None): Default timeout in seconds. Defaults to 30.0. Use None for no timeout.
+            default_timeout (float | None): Default timeout in seconds. Defaults to None. Use None for no timeout.
 
         """
         self.http_client = HTTPXClient(
