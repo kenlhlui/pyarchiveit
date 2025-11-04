@@ -175,6 +175,10 @@ class HTTPXClient:
         kwargs = {}
         if timeout is not None:
             kwargs["timeout"] = timeout
-        response = self.client.delete(url, **kwargs)
-        response.raise_for_status()
+        try:
+            response = self.client.patch(url, {"deleted": True}, **kwargs)
+            response.raise_for_status()
+        except httpx.HTTPError:
+            # Handle the error (e.g., log it, re-raise it, etc.)
+            raise
         return response
