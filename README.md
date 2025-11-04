@@ -21,20 +21,11 @@ uv add pyarchiveit
 
 ## 💡 Quick Start
 
-First, you will need to initialize the Archive-it API client with your account credentials.
-```python
-from pyarchiveit import ArchiveItAPI
+See the [Getting Started guide](https://kenlhlui.github.io/pyarchiveit/getting-started/) for detailed installation and initialization instructions.
 
-# Initialize the Archive-it API client with your credentials
-archive_it_client = ArchiveItAPI(
-    account_name='your_username',
-    account_password='your_password'
-)
-```
+### Create a new seed with metadata
 
-To create a new seed with metadata, or update an existing seed's metadata, you can use the following code:
 ```python
-# Create a new seed with metadata
 metadata = [
     {"value": "Example Metadata 1"},
     {"value": "Example Metadata 2"}
@@ -48,9 +39,9 @@ new_seed = archive_it_client.create_seed(
 )
 ```
 
-To update an existing seed's metadata:
+### Update an existing seed's metadata
+
 ```python
-# Update an existing seed's metadata
 updated_metadata = [
     {"value": "Updated Metadata 1"},
     {"value": "Updated Metadata 2"}
@@ -61,7 +52,7 @@ updated_seed = archive_it_client.update_seed_metadata(
 )
 ```
 
-To retrieve the seed list of a collection or multiple collections:
+### Retrieve seed lists
 ```python
 # Get seed list of a collection
 seeds = archive_it_client.get_seeds(collection_ids=123456)
@@ -70,7 +61,9 @@ seeds = archive_it_client.get_seeds(collection_ids=123456)
 seeds = archive_it_client.get_seeds(collection_ids=[123456, 789012])
 ```
 
-See the [documentation site](https://kenlhlui.github.io/pyarchiveit/) for more examples.
+## 📚 Documentation
+
+Visit the [documentation site](https://kenlhlui.github.io/pyarchiveit/) for complete guides and API reference.
 
 ## ⚫ Support
 For questions or support, please open an issue on the [GitHub repository](https://github.com/kenlhlui/pyarchiveit/issues).

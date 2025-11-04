@@ -2,15 +2,8 @@
 
 The main client class for interacting with the Archive-it API.
 
-You will first need to initialize the `ArchiveItAPI` class with your account credentials:
-
-```python
-from pyarchiveit import ArchiveItAPI
-archive_it_client = ArchiveItAPI(
-    account_name='your_username',
-    account_password='your_password'
-)
-```
+!!! info "First time using pyarchiveit?"
+    See the [Getting Started](../getting-started.md) guide for installation and initialization instructions.
 
 ::: pyarchiveit.api.ArchiveItAPI
     options:

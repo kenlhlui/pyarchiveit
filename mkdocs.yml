@@ -5,6 +5,9 @@ theme:
   name: material
   icon:
     logo: fontawesome/brands/github
+  font:
+    text: Roboto
+    code: Roboto Mono
   palette:
     # Palette toggle for light mode
     - scheme: default
@@ -38,6 +41,8 @@ markdown_extensions:
   - admonition
   - pymdownx.details
   - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
 
 extra_css:
   - stylesheets/extra.css
@@ -49,5 +54,6 @@ extra_css:
 
 nav:
   - Home: index.md
+  - Getting Started: getting-started.md
   - API Reference:
       - ArchiveItAPI: api/ArchiveItAPI.md

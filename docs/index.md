@@ -21,17 +21,7 @@ uv add pyarchiveit
 
 ## 💡 Quick Start
 
-First, initialize the Archive-it API client with your account credentials:
-
-```python
-from pyarchiveit import ArchiveItAPI
-
-# Initialize the Archive-it API client with your credentials
-archive_it_client = ArchiveItAPI(
-    account_name='your_username',
-    account_password='your_password'
-)
-```
+See the [Getting Started](getting-started.md) guide for detailed installation and initialization instructions.
 
 ### Create a new seed with metadata
 
