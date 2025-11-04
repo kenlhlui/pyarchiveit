@@ -219,3 +219,29 @@ class ArchiveItAPI:
         except Exception as e:
             logger.error(f"Failed to create seed in collection ID {collection_id}: {e}")
             raise
+
+    def delete_seed(
+        self,
+        seed_id: str | int,
+    ) -> dict:
+        """Delete a seed by its ID.
+
+        Args:
+            seed_id (str | int): The ID of the seed to delete.
+
+        Returns:
+            dict: The seed data from the API after deletion. If successful, the 'deleted' flag should be True.
+
+        """
+        logger.info(f"Deleting seed ID: {seed_id}")
+
+        try:
+            response = self.http_client.patch(
+                f"seed/{seed_id}",
+                data={"deleted": True},
+            )  # The API uses PATCH 'deleted' flag to delete seeds
+            logger.info(f"Successfully deleted seed ID: {seed_id}")
+            return response.json()
+        except Exception as e:
+            logger.error(f"Failed to delete seed ID {seed_id}: {e}")
+            raise
