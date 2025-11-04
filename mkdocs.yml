@@ -1,0 +1,53 @@
+---
+site_name: Pyarchiveit
+site_url: "https://kenlhlui.github.io/pyarchiveit/"
+theme:
+  name: material
+  icon:
+    logo: fontawesome/brands/github
+  palette:
+    # Palette toggle for light mode
+    - scheme: default
+      toggle:
+        icon: material/brightness-7 # Icon for light mode
+        name: Switch to dark mode
+    # Palette toggle for dark mode
+    - scheme: slate
+      toggle:
+        icon: material/brightness-4 # Icon for dark mode
+        name: Switch to light mode
+
+repo_url: https://github.com/kenlhlui/pyarchiveit
+repo_name: kenlhlui/pyarchiveit
+
+plugins:
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            show_source: false
+            docstring_style: google
+            allow_inspection: true
+            filters:
+              - "!^_"
+              - "!close$" # Exclude close method
+              - "^__init__$" # Exclude private methods (starting with _) except __init__
+  - search
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+
+extra_css:
+  - stylesheets/extra.css
+
+# extra:
+#   version:
+#     provider: "mike"
+#     alias: true
+
+nav:
+  - Home: index.md
+  - API Reference:
+      - ArchiveItAPI: api/ArchiveItAPI.md
