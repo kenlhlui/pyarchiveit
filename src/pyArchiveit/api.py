@@ -203,12 +203,16 @@ class ArchiveItAPI:
             if metadata:
                 seed_id = seed_data.get("id")
                 if seed_id:
-                    logger.info(f"Updating metadata for newly created seed ID: {seed_id}")
+                    logger.info(
+                        f"Updating metadata for newly created seed ID: {seed_id}"
+                    )
                     self.update_seed_metadata(seed_id=seed_id, metadata=metadata)
                     # Refresh seed_data to include updated metadata
                     seed_data["metadata"] = metadata
                 else:
-                    logger.warning("Seed created but no ID returned, cannot update metadata")
+                    logger.warning(
+                        "Seed created but no ID returned, cannot update metadata"
+                    )
 
             return seed_data
 
