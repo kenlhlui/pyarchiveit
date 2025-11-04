@@ -1,16 +1,25 @@
-🚨<span style="color:red; font-weight:bold;">
-  THIS LIBRARY IS UNDER ACTIVE DEVELOPMENT. USE AT YOUR OWN RISK.
-</span>🚨
+$\color{Red}\Huge{\textsf{🚨THIS LIBRARY IS UNDER ACTIVE DEVELOPMENT. USE AT YOUR OWN RISK.🚨}}$
 
-# Pyarchiveit
+
+# 📦 Pyarchiveit
 
 Pyarchiveit is a Python library designed to interact with the Internet Archive's Archive-it API. It provides a simple interface to manage the seeds and collections within Archive-it accounts.
 
-## Features
+## ✨ Features
 - Create and update seeds with metadata validation
 - Retrieve seed lists with their metadata for single or multiple collections
 
-## Example usage
+## 📥 Installation
+You can install the library using pip:
+```bash
+pip install pyarchiveit
+```
+Or use [`uv`](https://github.com/astral-sh/uv) if you have it installed:
+```bash
+uv add pyarchiveit
+```
+
+## 💡 Example usage
 
 First, you will need to initialize the Archive-it API client with your account credentials.
 ```python
@@ -66,3 +75,6 @@ For questions or support, please open an issue on the [GitHub repository](https:
 
 ## 🖊️ Author
 [Ken Lui](https://github.com/kenlhlui) - Data Curation Specialist at [Map & Data Library, University of Toronto](https://mdl.library.utoronto.ca/)
+
+## 📄 License
+This project is licensed under the GNU GPLv3 - see the [LICENSE](LICENSE) file for details.
