@@ -11,6 +11,8 @@ dependencies = [
     "httpx>=0.28.1",
     "ipykernel>=7.1.0",
 ]
+license = "GNU GPLv3"
+license-files = "LICENSE"
 
 [build-system]
 requires = ["uv_build>=0.9.7,<0.10.0"]
@@ -20,3 +22,6 @@ build-backend = "uv_build"
 ignore = [
     "G004"
 ]
+
+[project.urls]
+Repository = "https://github.com/kenlhlui/pyarchiveit"
