@@ -2,7 +2,8 @@
 
 import logging
 
-from .httpx_client import HTTPXClient
+import httpx
+
 from .utils import is_valid_metadata_structure
 
 logger = logging.getLogger(__name__)
@@ -27,12 +28,15 @@ class ArchiveItAPI:
             default_timeout (float | None): Default timeout in seconds. Defaults to None. Use None for no timeout.
 
         """
-        self.http_client = HTTPXClient(
-            account_name=account_name,
-            account_password=account_password,
+        # validate authentication upon initialization
+        self.SUCCESS_STATUS_CODES = range(200, 300)
+        self.http_client = httpx.Client(
             base_url=base_url,
-            default_timeout=default_timeout,
+            auth=(account_name, account_password),
+            follow_redirects=True,
+            timeout=default_timeout,
         )
+        self.validate_auth()
 
     def __enter__(self) -> "ArchiveItAPI":
         """Enter context manager."""
@@ -51,6 +55,21 @@ class ArchiveItAPI:
     def close(self) -> None:
         """Close the HTTP client and release resources."""
         self.http_client.close()
+
+    def validate_auth(self) -> None:
+        """Validate authentication credentials."""
+        try:
+            response = self.http_client.get("auth")
+            if (
+                response.status_code not in self.SUCCESS_STATUS_CODES
+                or response.json().get("id") is None
+            ):
+                msg = "Invalid authentication credentials."
+                raise ValueError(msg)
+            logger.info("Authentication credentials are valid.")
+        except Exception as e:
+            logger.error(f"Error validating authentication credentials: {e}")
+            raise
 
     def get_seed_list(
         self,
