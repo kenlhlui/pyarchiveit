@@ -1,6 +1,6 @@
 # 📦 Pyarchiveit
 
-Pyarchiveit is a Python library designed to interact with the Internet Archive's Archive-it API. It provides a simple interface to manage the seeds and collections within Archive-it accounts.
+[Pyarchiveit](https://pypi.org/project/pyarchiveit/) is a Python library designed to interact with the Internet Archive's Archive-it API. It provides a simple interface to manage the seeds and collections within Archive-it accounts.
 
 !!! warning
     This library is under active development. Use at your own risk.
@@ -11,11 +11,11 @@ Pyarchiveit is a Python library designed to interact with the Internet Archive's
 
 ## 📥 Installation
 You can install the library using pip:
-```bash
+``` bash
 pip install pyarchiveit
 ```
 Or use [uv](https://github.com/astral-sh/uv) if you have it installed:
-```bash
+``` bash
 uv add pyarchiveit
 ```
 
@@ -25,44 +25,57 @@ See the [Getting Started](getting-started.md) guide for detailed installation an
 
 ### Create a new seed with metadata
 
-```python
-metadata = [
-    {"value": "Example Metadata 1"},
-    {"value": "Example Metadata 2"}
-]
+``` Python
+metadata = { # (1)
+    'title':[{"value": "Example Metadata 1"}],
+    'another_field':[
+        {"value": "Example Metadata 2"},
+        {"value": "Additional Metadata"}
+        ]
+}
+
 new_seed = archive_it_client.create_seed(
     collection_id=123456,
-    url='http://example.com',
-    crawl_definition_id=789012,
+    url="http://example.com",
+    crawl_definition_id=41125648146,
     other_params=None,
-    metadata=metadata
+    metadata=metadata,
 )
+
 ```
+
+1.  metadata is a Python dictionary (dict) that stores descriptive information about an object (for example, a web resource, dataset, or archive seed).
+
+Each key represents a metadata field, and each value is a list of dictionaries, where each inner dictionary contains a "value" key holding the actual data.
 
 ### Update an existing seed's metadata
 
-```python
-updated_metadata = [
-    {"value": "Updated Metadata 1"},
-    {"value": "Updated Metadata 2"}
-]
+``` Python
+metadata = {
+    'title':[{"value": "Example Metadata 1"}],
+    'another_field':[
+        {"value": "Example Metadata 2"},
+        {"value": "Additional Metadata"}
+        ]
+}
 updated_seed = archive_it_client.update_seed_metadata(
     seed_id=123456,
     metadata=updated_metadata
 )
 ```
 
-See the [ArchiveItAPI](api/ArchiveItAPI.md) page for full method documentation.
-
 ### Retrieve seed lists
 
-```python
+``` Python
 # Get seed list of a collection
 seeds = archive_it_client.get_seeds(collection_ids=123456)
 
 # Or get seeds from multiple collections
 seeds = archive_it_client.get_seeds(collection_ids=[123456, 789012])
 ```
+
+!!! tip
+    See the [ArchiveItAPI Reference](api/ArchiveItAPI.md) for full method documentation.
 
 ## ⚫ Support
 

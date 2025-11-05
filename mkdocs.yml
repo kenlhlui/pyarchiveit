@@ -19,6 +19,10 @@ theme:
       toggle:
         icon: material/brightness-4 # Icon for dark mode
         name: Switch to light mode
+  features:
+    - content.code.copy
+    - content.code.select
+    - content.code.annotate
 
 repo_url: https://github.com/kenlhlui/pyarchiveit
 repo_name: kenlhlui/pyarchiveit
@@ -43,6 +47,20 @@ markdown_extensions:
   - pymdownx.superfences
   - pymdownx.tabbed:
       alternate_style: true
+  - attr_list
+  - md_in_html
+  - pymdownx.superfences:
+      custom_fences:
+        - name: python
+          class: highlight
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
 
 extra_css:
   - stylesheets/extra.css
