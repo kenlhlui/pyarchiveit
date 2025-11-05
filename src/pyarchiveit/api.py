@@ -76,6 +76,7 @@ class ArchiveItAPI:
         self,
         collection_id: str | int | list[str | int],
         limit: int = -1,
+        sort: str | None = None,
         format: str = "json",
         timeout: float | None = None,
     ) -> list[dict]:
@@ -84,6 +85,7 @@ class ArchiveItAPI:
         Args:
             collection_id (str | int | list[str | int]): Collection ID or list of Collection IDs.
             limit (int): Maximum number of seeds to retrieve per collection. Defaults to -1 (no limit).
+            sort (str | None): Sort order based on the result. Negative values (-) indicate ascending order. Defaults to None. See the available fields in the API documentation (Data Models > Seed). Example values: "id", "-id", "last_updated_date", "-last_updated_date".
             format (str): The format of the response (json or xml). Defaults to "json".
             timeout (float | None): Timeout in seconds for this request. Uses client default if not specified.
 
@@ -108,7 +110,12 @@ class ArchiveItAPI:
             try:
                 response = self.http_client.get(
                     "seed",
-                    params={"collection": coll_id, "limit": limit, "format": format},
+                    params={
+                        "collection": coll_id,
+                        "limit": limit,
+                        "format": format,
+                        "sort": sort,
+                    },
                     timeout=timeout,
                 )
                 data = response.json()
