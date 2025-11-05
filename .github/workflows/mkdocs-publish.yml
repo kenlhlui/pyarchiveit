@@ -30,6 +30,10 @@ jobs:
         run: uv sync --only-group docs
       - name: Deploy MkDocs site to GitHub Pages with Mike
         run: |
-          VERSION=${GITHUB_REF#refs/tags/}
-          uv run mike deploy $VERSION latest --push --update-aliases
+          if [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            VERSION=${GITHUB_REF#refs/tags/}
+            uv run mike deploy $VERSION latest --push --update-aliases
+          else
+            uv run mike deploy latest --push --update-aliases
+          fi
           uv run mike set-default latest --push
