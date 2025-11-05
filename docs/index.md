@@ -26,7 +26,7 @@ See the [Getting Started](getting-started.md) guide for detailed installation an
 ### Create a new seed with metadata
 
 ``` Python
-metadata = { # (1)
+metadata = { # (1)!
     'title':[{"value": "Example Metadata 1"}],
     'another_field':[
         {"value": "Example Metadata 2"},
@@ -44,9 +44,7 @@ new_seed = archive_it_client.create_seed(
 
 ```
 
-1.  metadata is a Python dictionary (dict) that stores descriptive information about an object (for example, a web resource, dataset, or archive seed).
-
-Each key represents a metadata field, and each value is a list of dictionaries, where each inner dictionary contains a "value" key holding the actual data.
+1.  To specify metadata fields, the `metadata` parameter should be a dictionary where each key is the metadata field name, and the value is a list of dictionaries. Each dictionary in the list should contain a "value" key with the corresponding metadata value. The structure MUST be followed or the API will reject the request.
 
 ### Update an existing seed's metadata
 
