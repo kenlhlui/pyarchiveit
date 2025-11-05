@@ -34,6 +34,7 @@ convention = "google"
 
 [dependency-groups]
 docs = [
+    "griffe-pydantic>=1.1.8",
     "mike>=2.1.3",
     "mkdocs>=1.6.1",
     "mkdocs-material>=9.6.23",
