@@ -30,19 +30,12 @@ Visit the [documentation site](https://kenlhlui.github.io/pyarchiveit/) for comp
 ## ⚫ Support
 For questions or support, please open an issue on the [GitHub repository](https://github.com/kenlhlui/pyarchiveit/issues).
 
+## 🏗️ Development
+
+See the [contributing guide](CONTRIBUTING.md) for details on how to contribute to this project.
+
 ## 🖊️ Author
 [Ken Lui](https://github.com/kenlhlui) - Data Curation Specialist at [Map & Data Library, University of Toronto](https://mdl.library.utoronto.ca/)
 
-## 🏗️ Development
-To install the development dependencies, use uv to run:
-```bash
-uv sync --all-extras --all-groups
-```
-
-Use the following commands to release a new version:
-```bash
-bash scripts/release.sh
-```
-
-## 📄 License
+## ⚖️ License
 This project is licensed under the GNU GPLv3 - see the [LICENSE](LICENSE) file for details.
