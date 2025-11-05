@@ -34,8 +34,8 @@ jobs:
         run: |
           if [[ "${{ github.ref }}" == refs/tags/* ]]; then
             VERSION=${GITHUB_REF#refs/tags/}
-            uv run mike deploy $VERSION latest --push --update-aliases
+            uv run mike deploy --force $VERSION latest --push --update-aliases
           else
-            uv run mike deploy latest --push --update-aliases
+            uv run mike deploy --force latest --push --update-aliases
           fi
           uv run mike set-default latest --push
