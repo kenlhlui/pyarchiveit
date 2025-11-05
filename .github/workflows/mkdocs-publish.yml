@@ -26,8 +26,8 @@ jobs:
         with:
           version: '0.9.7'
           enable-cache: true
-      - name: Install dependencies with uv
-        run: uv sync --extra docs
+      - name: Install dependencies (docs only) with uv
+        run: uv sync --only-group docs
       - name: Deploy MkDocs site to GitHub Pages with Mike
         run: |
           VERSION=${GITHUB_REF#refs/tags/}
