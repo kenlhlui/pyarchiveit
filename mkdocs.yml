@@ -3,6 +3,7 @@ site_name: Pyarchiveit
 site_url: "https://kenlhlui.github.io/pyarchiveit/"
 theme:
   name: material
+  custom_dir: docs/overrides
   icon:
     logo: fontawesome/brands/github
   font:
@@ -27,7 +28,23 @@ theme:
 repo_url: https://github.com/kenlhlui/pyarchiveit
 repo_name: kenlhlui/pyarchiveit
 
+extra:
+  version:
+    provider: mike
+
+extra_css:
+  - stylesheets/extra.css
+
+nav:
+  - Home: index.md
+  - Getting Started: getting-started.md
+  - API Reference:
+      - ArchiveItAPI: api/ArchiveItAPI.md
+
 plugins:
+  - mike:
+      alias_type: symlink
+      canonical_version: latest
   - mkdocstrings:
       handlers:
         python:
@@ -59,17 +76,3 @@ markdown_extensions:
       pygments_lang_class: true
   - pymdownx.inlinehilite
   - pymdownx.snippets
-
-extra_css:
-  - stylesheets/extra.css
-
-# extra:
-#   version:
-#     provider: "mike"
-#     alias: true
-
-nav:
-  - Home: index.md
-  - Getting Started: getting-started.md
-  - API Reference:
-      - ArchiveItAPI: api/ArchiveItAPI.md

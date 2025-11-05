@@ -4,8 +4,10 @@ name: Publish MkDocs Site to GitHub Pages
 on:
   push:
     tags:
-      # Publish to PyPI on any tag starting with a `v`, e.g., v0.1.0
+      # Publish to gh-pages on any tag starting with a `v`, e.g., v0.1.0
       - v*
+
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -26,5 +28,8 @@ jobs:
           enable-cache: true
       - name: Install dependencies with uv
         run: uv sync --extra docs
-      - name: Deploy MkDocs site to GitHub Pages
-        run: uv run mkdocs gh-deploy --force
+      - name: Deploy MkDocs site to GitHub Pages with Mike
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/}
+          uv run mike deploy $VERSION latest --push --update-aliases
+          uv run mike set-default latest --push
