@@ -66,7 +66,7 @@ if [[ "$DRY_RUN" == true ]]; then
 fi
 
 # Bump version with error handling
-if ! uv bump "$new_version"; then
+if ! uv version --bump "$new_version"; then
   echo "Error: uv bump failed."
   exit 1
 fi
