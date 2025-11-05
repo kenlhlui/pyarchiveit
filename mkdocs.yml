@@ -3,6 +3,7 @@ site_name: Pyarchiveit
 site_url: "https://kenlhlui.github.io/pyarchiveit/"
 theme:
   name: material
+  custom_dir: docs/overrides
   icon:
     logo: fontawesome/brands/github
   font:
