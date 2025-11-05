@@ -3,7 +3,7 @@ $\color{Red}\Huge{\textsf{🚨THIS LIBRARY IS UNDER ACTIVE DEVELOPMENT. USE AT Y
 
 # 📦 Pyarchiveit
 
-Pyarchiveit is a Python library designed to interact with the Internet Archive's Archive-it API. It provides a simple interface to manage the seeds and collections within Archive-it accounts.
+[Pyarchiveit](https://pypi.org/project/pyarchiveit/) is a Python library designed to interact with the Internet Archive's Archive-it API. It provides a simple interface to manage the seeds and collections within Archive-it accounts.
 
 ## ✨ Features
 - Create and update seeds with metadata validation
