@@ -1,0 +1,16 @@
+/* Make code blocks smaller */
+.highlight code,
+pre code {
+    font-size: 0.85em;
+    line-height: 1.4;
+}
+
+/* Make inline code smaller */
+code {
+    font-size: 0.9em;
+}
+
+/* extra.css */
+.md-header {
+    background-color: #1E3765; /* Dark Blue */
+}
