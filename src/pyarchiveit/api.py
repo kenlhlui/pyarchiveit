@@ -78,16 +78,14 @@ class ArchiveItAPI:
         limit: int = -1,
         sort: str | None = None,
         format: str = "json",
-        timeout: float | None = None,
     ) -> list[dict]:
-        """Get seeds for a given collection ID or list of collection IDs.
+        r"""Get seeds for a given collection ID or list of collection IDs.
 
         Args:
             collection_id (str | int | list[str | int]): Collection ID or list of Collection IDs.
             limit (int): Maximum number of seeds to retrieve per collection. Defaults to -1 (no limit).
-            sort (str | None): Sort order based on the result. Negative values (-) indicate ascending order. Defaults to None. See the available fields in the API documentation (Data Models > Seed). Example values: "id", "-id", "last_updated_date", "-last_updated_date".
+            sort (str | None): Sort order based on the result. Negative values (-) indicate ascending order. Defaults to None.<br><br>See the available fields in the API documentation (Data Models > Seed).<br><br>Example values: "id", "-id", "last_updated_date", "-last_updated_date".
             format (str): The format of the response (json or xml). Defaults to "json".
-            timeout (float | None): Timeout in seconds for this request. Uses client default if not specified.
 
         Returns:
             list[SeedKeys]: List of validated seed objects from all requested collections.
@@ -96,8 +94,17 @@ class ArchiveItAPI:
             httpx.HTTPStatusError: If the API request fails.
             httpx.TimeoutException: If the request times out.
             ValidationError: If the API returns invalid seed data.
+            ValueError: If the `sort` parameter is invalid.
 
         """
+        # Pydantic validate sort parameter is a valid field
+        if sort:
+            sort_field = sort.lstrip("-")
+            if sort_field not in SeedKeys.model_fields:
+                msg = f"Invalid sort field: {sort_field}. Must be one of: {list(SeedKeys.model_fields.keys())}"
+                logger.error(msg)
+                raise ValueError(msg)
+
         # Normalize input to a list
         collection_ids = (
             [collection_id] if isinstance(collection_id, (str, int)) else collection_id
@@ -116,7 +123,6 @@ class ArchiveItAPI:
                         "format": format,
                         "sort": sort,
                     },
-                    timeout=timeout,
                 )
                 data = response.json()
 
