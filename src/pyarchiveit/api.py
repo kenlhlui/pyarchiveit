@@ -37,7 +37,7 @@ class ArchiveItAPI:
             follow_redirects=True,
             timeout=default_timeout,
         )
-        self.validate_auth()
+        self._validate_auth()
 
     def __enter__(self) -> "ArchiveItAPI":
         """Enter context manager."""
@@ -57,7 +57,7 @@ class ArchiveItAPI:
         """Close the HTTP client and release resources."""
         self.http_client.close()
 
-    def validate_auth(self) -> None:
+    def _validate_auth(self) -> None:
         """Validate authentication credentials."""
         try:
             response = self.http_client.get("auth")
@@ -117,7 +117,7 @@ class ArchiveItAPI:
                 if isinstance(data, list):
                     # Validate each seed using Pydantic
                     validated_seeds = [
-                        SeedKeys.model_validate(seed).model_dump() for seed in data
+                        SeedKeys.from_system(seed).model_dump() for seed in data
                     ]
                     all_seeds.extend(validated_seeds)
                     logger.info(
@@ -264,10 +264,7 @@ class ArchiveItAPI:
                         "Seed created but no ID returned, cannot update metadata"
                     )
 
-            # Validate and return the response
-            SeedKeys.model_validate(seed_data).model_dump()  # Just to validate
-
-            return SeedKeys.model_validate(seed_data).model_dump()
+            return SeedKeys.from_system(seed_data).model_dump()
 
         except ValidationError as e:
             logger.error(
