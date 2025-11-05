@@ -6,13 +6,13 @@ Install pyarchiveit using pip or uv:
 
 === "pip"
 
-    ```bash
+    ```sh
     pip install pyarchiveit
     ```
 
 === "uv"
 
-    ```bash
+    ```sh
     uv add pyarchiveit
     ```
 
@@ -26,38 +26,42 @@ You will need to initialize the `ArchiveItAPI` class with your account credentia
 
     === "pip"
 
-        ```bash
+        ``` bash
         pip install python-dotenv
         ```
 
     === "uv"
 
-        ```bash
+        ``` bash
         uv add python-dotenv
         ```
 
     Then, create a `.env` file in your project directory with the following content:
-    ```
+    ``` bash
     ARCHIVE_IT_ACCOUNT_NAME=your_username
     ARCHIVE_IT_ACCOUNT_PASSWORD=your_password
     ```
 
     Now, read the environment variables in your code and initialize the `ArchiveItAPI` client:
-    ```python
+    ``` Python
     import os
     from dotenv import load_dotenv
-    load_dotenv()
+    load_dotenv() # (1)!
+
     from pyarchiveit import ArchiveItAPI
 
     archive_it_client = ArchiveItAPI(
         account_name=os.getenv('ARCHIVE_IT_ACCOUNT_NAME'),
         account_password=os.getenv('ARCHIVE_IT_ACCOUNT_PASSWORD')
     )
+    
     ```
+
+    1.  The `load_dotenv()` function loads the environment variables from the `.env` file into the system's environment variables, making them accessible via `os.getenv()`.
 
 === "Direct initialization"
 
-    ```python
+    ``` Python
     from pyarchiveit import ArchiveItAPI
 
     # Initialize the Archive-it API client with your credentials
