@@ -36,7 +36,7 @@ For questions or support, please open an issue on the [GitHub repository](https:
 ## 🏗️ Development
 To install the development dependencies, use uv to run:
 ```bash
-uv sync  --all-extras
+uv sync --all-extras --all-groups
 ```
 
 Use the following commands to release a new version:
