@@ -3,8 +3,9 @@
 import logging
 
 import httpx
+from pydantic import ValidationError
 
-from .utils import is_valid_metadata_structure
+from .models import SeedCreate, SeedKeys, SeedUpdate
 
 logger = logging.getLogger(__name__)
 
@@ -36,7 +37,7 @@ class ArchiveItAPI:
             follow_redirects=True,
             timeout=default_timeout,
         )
-        self.validate_auth()
+        self._validate_auth()
 
     def __enter__(self) -> "ArchiveItAPI":
         """Enter context manager."""
@@ -56,7 +57,7 @@ class ArchiveItAPI:
         """Close the HTTP client and release resources."""
         self.http_client.close()
 
-    def validate_auth(self) -> None:
+    def _validate_auth(self) -> None:
         """Validate authentication credentials."""
         try:
             response = self.http_client.get("auth")
@@ -75,25 +76,35 @@ class ArchiveItAPI:
         self,
         collection_id: str | int | list[str | int],
         limit: int = -1,
+        sort: str | None = None,
         format: str = "json",
-        timeout: float | None = None,
     ) -> list[dict]:
-        """Get seeds for a given collection ID or list of collection IDs.
+        r"""Get seeds for a given collection ID or list of collection IDs.
 
         Args:
             collection_id (str | int | list[str | int]): Collection ID or list of Collection IDs.
             limit (int): Maximum number of seeds to retrieve per collection. Defaults to -1 (no limit).
+            sort (str | None): Sort order based on the result. Negative values (-) indicate ascending order. Defaults to None.<br><br>See the available fields in the API documentation (Data Models > Seed).<br><br>Example values: "id", "-id", "last_updated_date", "-last_updated_date".
             format (str): The format of the response (json or xml). Defaults to "json".
-            timeout (float | None): Timeout in seconds for this request. Uses client default if not specified.
 
         Returns:
-            list[dict]: List of seeds from all requested collections.
+            list[SeedKeys]: List of validated seed objects from all requested collections.
 
         Raises:
             httpx.HTTPStatusError: If the API request fails.
             httpx.TimeoutException: If the request times out.
+            ValidationError: If the API returns invalid seed data.
+            ValueError: If the `sort` parameter is invalid.
 
         """
+        # Pydantic validate sort parameter is a valid field
+        if sort:
+            sort_field = sort.lstrip("-")
+            if sort_field not in SeedKeys.model_fields:
+                msg = f"Invalid sort field: {sort_field}. Must be one of: {list(SeedKeys.model_fields.keys())}"
+                logger.error(msg)
+                raise ValueError(msg)
+
         # Normalize input to a list
         collection_ids = (
             [collection_id] if isinstance(collection_id, (str, int)) else collection_id
@@ -106,14 +117,22 @@ class ArchiveItAPI:
             try:
                 response = self.http_client.get(
                     "seed",
-                    params={"collection": coll_id, "limit": limit, "format": format},
-                    timeout=timeout,
+                    params={
+                        "collection": coll_id,
+                        "limit": limit,
+                        "format": format,
+                        "sort": sort,
+                    },
                 )
                 data = response.json()
 
                 # API returns a list of seeds
                 if isinstance(data, list):
-                    all_seeds.extend(data)
+                    # Validate each seed using Pydantic
+                    validated_seeds = [
+                        SeedKeys.from_system(seed).model_dump() for seed in data
+                    ]
+                    all_seeds.extend(validated_seeds)
                     logger.info(
                         f"Retrieved {len(data)} seeds for collection ID: {coll_id}"
                     )
@@ -121,6 +140,11 @@ class ArchiveItAPI:
                     logger.warning(
                         f"Unexpected response format for collection ID {coll_id}: {type(data)}"
                     )
+            except ValidationError as e:
+                logger.error(
+                    f"Validation error for seeds from collection ID {coll_id}: {e}"
+                )
+                raise
             except Exception as e:
                 logger.error(f"Failed to fetch seeds for collection ID {coll_id}: {e}")
                 raise
@@ -131,31 +155,41 @@ class ArchiveItAPI:
         self,
         seed_id: str | int,
         metadata: dict,
-    ) -> None:
+    ) -> dict:
         """Update metadata for a specific seed.
 
         Args:
             seed_id (str | int): The ID of the seed to update.
             metadata (dict): The metadata to update for the seed.
 
+        Raises:
+            ValidationError: If the metadata structure is invalid.
+
         """
         logger.info(f"Updating metadata for seed ID: {seed_id}")
 
-        # Check whether the key after the first key start with 'value' or else reject
-        all_have_value = is_valid_metadata_structure(metadata)
-        if not all_have_value:
-            msg = 'Each metadata list item must be a dict containing a "value" key.'
-            logger.error(
-                f"Invalid metadata structure for seed ID {seed_id}: {metadata}"
-            )
-            raise ValueError(msg)
+        # Validate metadata structure using Pydantic
+        try:
+            seed_update = SeedUpdate(metadata=metadata)
+        except ValidationError as e:
+            logger.error(f"Invalid metadata structure for seed ID {seed_id}: {e}")
+            raise
 
         try:
-            self.http_client.patch(
+            logger.debug(
+                f"Seed: {seed_update.model_dump(exclude_none=True, mode='python')}"
+            )
+            response = self.http_client.patch(
                 f"seed/{seed_id}",
-                data={"metadata": metadata},
+                data=seed_update.model_dump(exclude_none=True, mode="python"),
             )
             logger.info(f"Successfully updated metadata for seed ID: {seed_id}")
+            return response.json()
+        except ValidationError as e:
+            logger.error(
+                f"Validation error for updated metadata of seed ID {seed_id}: {e}"
+            )
+            raise
         except Exception as e:
             logger.error(f"Failed to update metadata for seed ID {seed_id}: {e}")
             raise
@@ -178,36 +212,46 @@ class ArchiveItAPI:
             metadata (dict | None): Metadata to set for the seed after creation.
 
         Returns:
-            dict: The created seed data returned by the API.
+            dict: The validated created seed data returned by the API.
+
+        Raises:
+            ValidationError: If the input data or metadata structure is invalid.
 
         """
         logger.info(f"Creating new seed in collection ID: {collection_id}")
 
-        payload = {
-            "url": url,
-            "collection": collection_id,
-            "crawl_definition": crawl_definition_id,
-        }
-
         # Handle metadata from other_params
-        if other_params:
-            if "metadata" in other_params:
-                other_params_metadata = other_params["metadata"]
-                other_params.pop("metadata")  # Remove metadata from other_params
-                # Combine with metadata parameter if provided
-                if metadata:
-                    metadata.update(other_params_metadata)
-                else:
-                    metadata = other_params_metadata
-            payload.update(other_params)
+        if other_params and "metadata" in other_params:
+            other_params_metadata = other_params.pop("metadata")
+            # Combine with metadata parameter if provided
+            if metadata:
+                metadata.update(other_params_metadata)
+            else:
+                metadata = other_params_metadata
 
-        # Validate metadata structure if provided
-        if metadata and not is_valid_metadata_structure(metadata):
-            logger.error(
-                f"Invalid metadata structure for seed creation in collection ID {collection_id}: {metadata}"
+        # Validate input using Pydantic
+        try:
+            seed_create = SeedCreate(
+                url=url,
+                collection=collection_id,
+                crawl_definition=crawl_definition_id,
             )
-            msg = 'Each metadata list item must be a dict containing a "value" key.'
-            raise ValueError(msg)
+        except ValidationError as e:
+            logger.error(
+                f"Invalid seed creation data for collection ID {collection_id}: {e}"
+            )
+            raise
+
+        # Convert to dict for API request
+        payload: dict = seed_create.model_dump(
+            exclude_none=True, by_alias=True, mode="python"
+        )
+
+        logger.debug(f"Seed creation payload: {payload}")
+
+        # Add any additional params
+        if other_params:
+            payload.update(other_params)
 
         try:
             response = self.http_client.post(
@@ -215,7 +259,7 @@ class ArchiveItAPI:
                 data=payload,
             )
             seed_data = response.json()
-            logger.debug(f"Response from seed creation: {seed_data}")
+            logger.debug(f"Seed creation response data: {seed_data}")
             logger.info(f"Successfully created seed in collection ID: {collection_id}")
 
             # If metadata is provided, update it after seed creation
@@ -233,8 +277,13 @@ class ArchiveItAPI:
                         "Seed created but no ID returned, cannot update metadata"
                     )
 
-            return seed_data
+            return SeedKeys.from_system(seed_data).model_dump()
 
+        except ValidationError as e:
+            logger.error(
+                f"Validation error for created seed in collection ID {collection_id}: {e}"
+            )
+            raise
         except Exception as e:
             logger.error(f"Failed to create seed in collection ID {collection_id}: {e}")
             raise
@@ -249,7 +298,10 @@ class ArchiveItAPI:
             seed_id (str | int): The ID of the seed to delete.
 
         Returns:
-            dict: The seed data from the API after deletion. If successful, the 'deleted' flag should be True.
+            dict: The validated seed data from the API after deletion. The 'deleted' flag should be True.
+
+        Raises:
+            ValidationError: If the API returns invalid seed data.
 
         """
         logger.info(f"Deleting seed ID: {seed_id}")
@@ -260,7 +312,13 @@ class ArchiveItAPI:
                 data={"deleted": True},
             )  # The API uses PATCH 'deleted' flag to delete seeds
             logger.info(f"Successfully deleted seed ID: {seed_id}")
-            return response.json()
+            seed_data = response.json()
+
+            # Validate and return the response
+            return SeedKeys.model_validate(seed_data).model_dump()
+        except ValidationError as e:
+            logger.error(f"Validation error for deleted seed ID {seed_id}: {e}")
+            raise
         except Exception as e:
             logger.error(f"Failed to delete seed ID {seed_id}: {e}")
             raise

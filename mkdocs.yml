@@ -40,6 +40,8 @@ nav:
   - Getting Started: getting-started.md
   - API Reference:
       - ArchiveItAPI: api/ArchiveItAPI.md
+  - Data Models:
+      - data_models/seed.md
 
 plugins:
   - mike:
@@ -56,6 +58,9 @@ plugins:
               - "!^_"
               - "!close$" # Exclude close method
               - "^__init__$" # Exclude private methods (starting with _) except __init__
+            extensions:
+              - griffe_pydantic:
+                  schema: true
   - search
 
 markdown_extensions:
