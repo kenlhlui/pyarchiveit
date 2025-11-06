@@ -1,10 +1,15 @@
 """A module for interacting with the Archive-it API."""
 
 import logging
+from typing import Any
 
-import httpx
+from httpx import Response
 from pydantic import ValidationError
 
+from pyarchiveit.model_validator import ModelValidator
+
+from .exceptions import InvalidAuthError
+from .httpx_client import HTTPXClient
 from .models import SeedCreate, SeedKeys, SeedUpdate
 
 logger = logging.getLogger(__name__)
@@ -31,7 +36,7 @@ class ArchiveItAPI:
         """
         # validate authentication upon initialization
         self.SUCCESS_STATUS_CODES = range(200, 300)
-        self.http_client = httpx.Client(
+        self.httpx_client = HTTPXClient(
             base_url=base_url,
             auth=(account_name, account_password),
             follow_redirects=True,
@@ -55,22 +60,34 @@ class ArchiveItAPI:
 
     def close(self) -> None:
         """Close the HTTP client and release resources."""
-        self.http_client.close()
+        self.httpx_client.close()
+
+    def _request(self, method: str, endpoint: str) -> Response:
+        """Make an HTTP request using the HTTPXClient. Mainly for internal/Debug use.
+
+        Args:
+            method (str): HTTP method (get, post, patch, delete, etc.)
+            endpoint (str): API endpoint
+
+        Returns:
+            httpx.Response: The HTTP response
+
+        """
+        return self.httpx_client.request(method, endpoint)
 
     def _validate_auth(self) -> None:
         """Validate authentication credentials."""
-        try:
-            response = self.http_client.get("auth")
-            if (
-                response.status_code not in self.SUCCESS_STATUS_CODES
-                or response.json().get("id") is None
-            ):
-                msg = "Invalid authentication credentials."
-                raise ValueError(msg)
-            logger.info("Authentication credentials are valid.")
-        except Exception as e:
-            logger.error(f"Error validating authentication credentials: {e}")
-            raise
+        response = self.httpx_client.get("auth")
+
+        if response.status_code in {401, 403}:
+            msg = "Invalid authentication credentials."
+            raise InvalidAuthError(msg)
+
+        if response.json().get("id") is None:
+            msg = "Authentication failed."
+            raise InvalidAuthError(msg)
+
+        logger.info("Authentication credentials are valid.")
 
     def get_seed_list(
         self,
@@ -78,7 +95,7 @@ class ArchiveItAPI:
         limit: int = -1,
         sort: str | None = None,
         format: str = "json",
-    ) -> list[dict]:
+    ) -> list:
         r"""Get seeds for a given collection ID or list of collection IDs.
 
         Args:
@@ -114,42 +131,36 @@ class ArchiveItAPI:
 
         for coll_id in collection_ids:
             logger.info(f"Fetching seeds for collection ID: {coll_id}")
-            try:
-                response = self.http_client.get(
-                    "seed",
-                    params={
-                        "collection": coll_id,
-                        "limit": limit,
-                        "format": format,
-                        "sort": sort,
-                    },
-                )
-                data = response.json()
+            response = self.httpx_client.get(
+                "seed",
+                params={
+                    "collection": coll_id,
+                    "limit": limit,
+                    "format": format,
+                    "sort": sort,
+                },
+            )
 
-                # API returns a list of seeds
-                if isinstance(data, list):
-                    # Validate each seed using Pydantic
-                    validated_seeds = [
-                        SeedKeys.from_system(seed).model_dump() for seed in data
-                    ]
-                    all_seeds.extend(validated_seeds)
-                    logger.info(
-                        f"Retrieved {len(data)} seeds for collection ID: {coll_id}"
-                    )
-                else:
-                    logger.warning(
-                        f"Unexpected response format for collection ID {coll_id}: {type(data)}"
-                    )
-            except ValidationError as e:
-                logger.error(
-                    f"Validation error for seeds from collection ID {coll_id}: {e}"
-                )
-                raise
-            except Exception as e:
-                logger.error(f"Failed to fetch seeds for collection ID {coll_id}: {e}")
-                raise
+            data = response.json()
 
-        return all_seeds
+            # API returns a list of seeds
+            if isinstance(data, list):
+                # Validate each seed using Pydantic
+                validated_seeds: list[dict[str, Any]] = [
+                    ModelValidator.validate(
+                        SeedKeys, seed, f"collection {coll_id}"
+                    ).model_dump()
+                    for seed in data
+                ]
+                all_seeds.extend(validated_seeds)
+                logger.info(f"Retrieved {len(data)} seeds for collection ID: {coll_id}")
+            else:
+                logger.warning(
+                    f"Unexpected response format for collection ID {coll_id}: {type(data)}"
+                )
+        return ModelValidator.validate_list(
+            SeedKeys, all_seeds, "all seeds", source="api"
+        )
 
     def update_seed_metadata(
         self,
@@ -175,24 +186,12 @@ class ArchiveItAPI:
             logger.error(f"Invalid metadata structure for seed ID {seed_id}: {e}")
             raise
 
-        try:
-            logger.debug(
-                f"Seed: {seed_update.model_dump(exclude_none=True, mode='python')}"
-            )
-            response = self.http_client.patch(
-                f"seed/{seed_id}",
-                data=seed_update.model_dump(exclude_none=True, mode="python"),
-            )
-            logger.info(f"Successfully updated metadata for seed ID: {seed_id}")
-            return response.json()
-        except ValidationError as e:
-            logger.error(
-                f"Validation error for updated metadata of seed ID {seed_id}: {e}"
-            )
-            raise
-        except Exception as e:
-            logger.error(f"Failed to update metadata for seed ID {seed_id}: {e}")
-            raise
+        response = self.httpx_client.patch(
+            f"seed/{seed_id}",
+            data=seed_update.model_dump(exclude_none=True, mode="python"),
+        )
+
+        return response.json()
 
     def create_seed(
         self,
@@ -253,40 +252,29 @@ class ArchiveItAPI:
         if other_params:
             payload.update(other_params)
 
-        try:
-            response = self.http_client.post(
-                "seed",
-                data=payload,
-            )
-            seed_data = response.json()
-            logger.debug(f"Seed creation response data: {seed_data}")
-            logger.info(f"Successfully created seed in collection ID: {collection_id}")
+        response = self.httpx_client.post(
+            "seed",
+            data=payload,
+        )
+        seed_data = response.json()
+        logger.info(f"Successfully created seed in collection ID: {collection_id}")
 
-            # If metadata is provided, update it after seed creation
-            if metadata:
-                seed_id = seed_data.get("id")
-                if seed_id:
-                    logger.info(
-                        f"Updating metadata for newly created seed ID: {seed_id}"
-                    )
-                    self.update_seed_metadata(seed_id=seed_id, metadata=metadata)
-                    # Refresh seed_data to include updated metadata
-                    seed_data["metadata"] = metadata
-                else:
-                    logger.warning(
-                        "Seed created but no ID returned, cannot update metadata"
-                    )
+        # If metadata is provided, update it after seed creation
+        if metadata:
+            seed_id = seed_data.get("id")
+            if seed_id:
+                logger.info(f"Updating metadata for newly created seed ID: {seed_id}")
+                self.update_seed_metadata(seed_id=seed_id, metadata=metadata)
+                # Refresh seed_data to include updated metadata
+                seed_data["metadata"] = metadata
+            else:
+                logger.warning(
+                    "Seed created but no ID returned, cannot update metadata"
+                )
 
-            return SeedKeys.from_system(seed_data).model_dump()
-
-        except ValidationError as e:
-            logger.error(
-                f"Validation error for created seed in collection ID {collection_id}: {e}"
-            )
-            raise
-        except Exception as e:
-            logger.error(f"Failed to create seed in collection ID {collection_id}: {e}")
-            raise
+        return ModelValidator.validate(
+            SeedKeys, seed_data, f"created seed in collection {collection_id}"
+        ).model_dump()
 
     def delete_seed(
         self,
@@ -306,19 +294,16 @@ class ArchiveItAPI:
         """
         logger.info(f"Deleting seed ID: {seed_id}")
 
-        try:
-            response = self.http_client.patch(
-                f"seed/{seed_id}",
-                data={"deleted": True},
-            )  # The API uses PATCH 'deleted' flag to delete seeds
-            logger.info(f"Successfully deleted seed ID: {seed_id}")
-            seed_data = response.json()
+        response = self.httpx_client.patch(
+            f"seed/{seed_id}",
+            data={"deleted": True},
+        )  # The API uses PATCH 'deleted' flag to delete seeds
 
-            # Validate and return the response
-            return SeedKeys.model_validate(seed_data).model_dump()
-        except ValidationError as e:
-            logger.error(f"Validation error for deleted seed ID {seed_id}: {e}")
-            raise
-        except Exception as e:
-            logger.error(f"Failed to delete seed ID {seed_id}: {e}")
-            raise
+        logger.info(f"Successfully deleted seed ID: {seed_id}")
+
+        seed_data = response.json()
+
+        # Validate and return the response
+        return ModelValidator.validate(
+            SeedKeys, seed_data, f"deleted seed {seed_id}"
+        ).model_dump()
