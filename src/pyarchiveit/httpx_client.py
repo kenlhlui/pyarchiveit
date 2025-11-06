@@ -78,6 +78,14 @@ class HTTPXClient:
         """Make a DELETE request."""
         return self.request("delete", endpoint, **kwargs)
 
+    def put(self, endpoint: str, **kwargs: dict) -> httpx.Response:
+        """Make a PUT request."""
+        return self.request("put", endpoint, **kwargs)
+
+    def head(self, endpoint: str, **kwargs: dict) -> httpx.Response:
+        """Make a HEAD request."""
+        return self.request("head", endpoint, **kwargs)
+
     def options(self, endpoint: str, **kwargs: dict) -> httpx.Response:
         """Make an OPTIONS request."""
         return self.request("options", endpoint, **kwargs)
