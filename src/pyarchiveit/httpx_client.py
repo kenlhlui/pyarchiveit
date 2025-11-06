@@ -51,10 +51,8 @@ class HTTPXClient:
         try:
             response = getattr(self.client, method)(endpoint, **kwargs)
             response.raise_for_status()
+            # Note: Handle HTTP errors (response.raise_for_status()) application side
             return response
-        except httpx.HTTPStatusError as e:
-            logger.error(f"HTTP error for {method.upper()} {endpoint}: {e}")
-            raise
         except httpx.TimeoutException as e:
             logger.error(f"Timeout for {method.upper()} {endpoint}: {e}")
             raise
@@ -77,6 +75,14 @@ class HTTPXClient:
     def delete(self, endpoint: str, **kwargs: dict) -> httpx.Response:
         """Make a DELETE request."""
         return self.request("delete", endpoint, **kwargs)
+
+    def put(self, endpoint: str, **kwargs: dict) -> httpx.Response:
+        """Make a PUT request."""
+        return self.request("put", endpoint, **kwargs)
+
+    def head(self, endpoint: str, **kwargs: dict) -> httpx.Response:
+        """Make a HEAD request."""
+        return self.request("head", endpoint, **kwargs)
 
     def options(self, endpoint: str, **kwargs: dict) -> httpx.Response:
         """Make an OPTIONS request."""
