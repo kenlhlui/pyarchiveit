@@ -36,7 +36,6 @@ class _SeedValidationMixin(BaseModel):
         "valid",
         "seed_type",
         "last_updated_date",
-        "crawl_definition",
         "canonical_url",
         "login_username",
         "login_password",
