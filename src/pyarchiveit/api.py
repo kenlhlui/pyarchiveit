@@ -1,6 +1,7 @@
 """A module for interacting with the Archive-it API."""
 
 import logging
+from typing import Any
 
 from httpx import Response
 from pydantic import ValidationError
@@ -88,6 +89,34 @@ class ArchiveItAPI:
             raise InvalidAuthError(msg)
 
         logger.info("Authentication credentials are valid.")
+
+    def get_seed_by_id(
+        self,
+        seed_id: str | int,
+    ) -> dict:
+        """Get a seed by its ID.
+
+        Args:
+            seed_id (str | int): The ID of the seed to retrieve.
+
+        Returns:
+            dict: The validated seed data returned by the API.
+
+        Raises:
+            httpx.HTTPStatusError: If the API request fails.
+            httpx.TimeoutException: If the request times out.
+            ValidationError: If the API returns invalid seed data.
+
+        """
+        logger.info(f"Fetching seed ID: {seed_id}")
+
+        response = self.httpx_client.get(f"seed/{seed_id}")
+
+        seed_data = response.json()
+
+        return ModelValidator.validate(
+            SeedKeys, seed_data, f"seed {seed_id}"
+        ).model_dump()
 
     def get_seed_list(
         self,
@@ -307,3 +336,80 @@ class ArchiveItAPI:
         return ModelValidator.validate(
             SeedKeys, seed_data, f"deleted seed {seed_id}"
         ).model_dump()
+
+    def search_seed_metadata(
+        self,
+        metadata_field: str | list | None = None,
+        metadata_value: str | list | None = None,
+        limit: int = -1,
+        pluck: str | None = None,
+    ) -> list:
+        """Search seeds by metadata field and value.
+
+        Note:
+            It is not necessary to search with the metadata_field to search for the value. If you just want to look up a value across all metadata fields, simply pass metadata_value and leave metadata_field as None.
+
+        Args:
+            metadata_field (str | list | None): The metadata field to search (e.g., "Title", "Author"). If a list is provided, searches within any of the fields.
+            metadata_value (str | list | None): The value to search for within the specified metadata field. If a list is provided, searches for any of the values.
+            limit (int): Maximum number of seeds to retrieve. Defaults to -1 (no limit).
+            pluck (str | None): Specific field to extract from each seed object (e.g. "seed", "name_control"). Defaults to None (returns full seed objects).
+
+        Returns:
+            list: A list of seeds matching the search criteria.
+        """
+        logger.info(f"Searching seeds by metadata: {metadata_field} = {metadata_value}")
+
+        # TODO: add model for the seed metadata search response
+        if pluck and pluck not in {"seed", "name_control", "id", "name", "value"}:
+            msg = f"Invalid pluck field: {pluck}. Must be one of: {list(SeedKeys.model_fields.keys())}"
+            logger.error(msg)
+            raise ValueError(msg)
+
+        # Build params dict, only including non-None optional parameters
+        params: dict[str, Any] = {"limit": limit}
+        if metadata_field:
+            params["name"] = metadata_field
+        if metadata_value:
+            params["value"] = metadata_value
+        if pluck:
+            params["pluck"] = pluck
+
+        response = self.httpx_client.get("seed_metadata", params=params)
+
+        seeds = response.json()
+        logger.info(
+            f"Found {len(seeds)} seeds matching metadata: {metadata_field} = {metadata_value}"
+        )
+
+        # TODO: Validate seed data
+        return seeds
+
+    def get_seed_with_metadata(
+        self,
+        metadata_field: str | None = None,
+        metadata_value: str | None = None,
+        limit: int = -1,
+        pluck: str | None = None,
+    ) -> list:
+        """Get seeds that match a specific metadata field and value.
+
+        Args:
+            metadata_field (str | None): The metadata field to search (e.g., "Title", "Author").
+            metadata_value (str | None): The value to search for within the specified metadata field.
+            limit (int): Maximum number of seeds to retrieve. Defaults to -1 (no limit).
+            pluck (str | None): Specific field to extract from each seed object (e.g. "collection"). Defaults to None (returns full seed objects).
+
+        """
+        logger.info(f"Getting seeds with metadata: {metadata_field} = {metadata_value}")
+
+        # First, search for seed IDs matching the metadata
+        seed_ids = self.search_seed_metadata(
+            metadata_field=metadata_field,
+            metadata_value=metadata_value,
+            limit=limit,
+            pluck="seed",
+        )
+
+        # Next, make the request to get the seed details
+        return [self.get_seed_by_id(seed_id) for seed_id in seed_ids]
