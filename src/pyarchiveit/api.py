@@ -96,6 +96,7 @@ class ArchiveItAPI:
         sort: str | None = None,
         pluck: str | None = None,
         format: str = "json",
+        additional_query: dict | None = None,
     ) -> list:
         r"""Get seeds for a given collection ID or list of collection IDs.
 
@@ -105,6 +106,7 @@ class ArchiveItAPI:
             sort (str | None): Sort order based on the result. Negative values (-) indicate ascending order. Defaults to None.<br><br>See the available fields in the API documentation (Data Models > Seed).<br><br>Example values: "id", "-id", "last_updated_date", "-last_updated_date".
             pluck (str | None): Specific field to extract from each seed object (e.g. "url", "id" ). Defaults to None (returns full seed objects).
             format (str): The format of the response (json or xml). Defaults to "json".
+            additional_query (dict): Additional query parameters to include in the request.<br><br> <value> can either be a string or list. A list means to query for multiple values for that parameter.<br><br>Format: {"param_name": <value>} e.g. {"last_updated_by": "PersonA"} or {"last_updated_by": ["PersonA", "PersonB"]}.
 
         Returns:
             list[SeedKeys] | list: If pluck is None, returns list of validated seed objects. If pluck is specified, returns list of the plucked field values.
@@ -132,22 +134,32 @@ class ArchiveItAPI:
 
         logger.info(f"Fetching seeds for collection ID(s): {str(collection_id)}")
 
+        # Handle multiple collection IDs
+        collection_id_dict = {}
+        if isinstance(collection_id, list):
+            collection_ids_str = ",".join(str(cid) for cid in collection_id)
+            collection_id = collection_ids_str
+            collection_id_dict = {"collection__in": collection_ids_str}
+        else:
+            collection_id_dict = {"collection": str(collection_id)}
+
         # Build params dict, only including non-None optional parameters
         params = {
-            "collection": collection_id,
+            **collection_id_dict,
             "limit": limit,
             "format": format,
+            **(sort and {"sort": sort} or {}),
+            **(pluck and {"pluck": pluck} or {}),
+            **(additional_query or {}),
         }
-        if sort:
-            params["sort"] = sort
-        if pluck:
-            params["pluck"] = pluck
 
         response = self.httpx_client.get("seed", params=params)
 
         data = response.json()
+
         if pluck:
             return data  # Return list of plucked field values
+
         return ModelValidator.validate_list(SeedKeys, data, "all seeds", source="api")
 
     def update_seed_metadata(
