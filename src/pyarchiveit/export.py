@@ -58,7 +58,24 @@ def export_seed_to_spreadsheet(
     file_name: str,
     file_format: str = "xlsx",
 ) -> None:
-    """Export data to a spreadsheet file.
+    """Export seed data to a spreadsheet file.
+
+    Note:
+        Can only use with seed data (returns from e.g., api.get_seeds(), api.get_seed_list(), etc.).
+
+    Example:
+        ``` Python
+        # Get seed data from Archive-It API
+        seed_data = api.get_seeds(collection_id=12345)
+
+        # Export seed data to XLSX file
+        export_seed_to_spreadsheet(
+            data=seed_data,
+            file_dir="output",
+            file_name="seeds.xlsx",
+            file_format="xlsx"
+        )
+        ```
 
     Args:
         data (list of dict): The data to export.

@@ -40,6 +40,7 @@ nav:
   - Getting Started: getting-started.md
   - API Reference:
       - ArchiveItAPI: api/ArchiveItAPI.md
+      - Export Module: api/export.md
   - Data Models:
       - data_models/seed.md
 
@@ -52,6 +53,7 @@ plugins:
         python:
           options:
             show_source: false
+            members_order: "alphabetical"
             docstring_style: google
             allow_inspection: true
             filters:
