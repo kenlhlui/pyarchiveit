@@ -1,4 +1,6 @@
-$\color{Red}\Huge{\textsf{🚨THIS LIBRARY IS UNDER ACTIVE DEVELOPMENT. USE AT YOUR OWN RISK.🚨}}$
+> [!CAUTION]
+> 🚨THIS LIBRARY IS UNDER ACTIVE DEVELOPMENT. USE AT YOUR OWN RISK.🚨
+
 
 
 # 📦 Pyarchiveit
@@ -8,6 +10,7 @@ $\color{Red}\Huge{\textsf{🚨THIS LIBRARY IS UNDER ACTIVE DEVELOPMENT. USE AT Y
 ## ✨ Features
 - Create and update seeds with metadata validation
 - Retrieve seed lists with their metadata for single or multiple collections
+- Export seed data to CSV and XLSX formats
 
 ## 📥 Installation
 You can install the library using pip:
@@ -18,6 +21,9 @@ Or use [`uv`](https://github.com/astral-sh/uv) if you have it installed:
 ```bash
 uv add pyarchiveit
 ```
+
+> [! TIP]
+> As a best practice (and since the project is under active development), you should pin the version of `pyarchiveit` when installing it, e.g. `pip install pyarchiveit==0.1.0` or `uv add pyarchiveit==0.1.0`, to avoid unexpected issues from future updates.
 
 ## 💡 Quick Start
 
