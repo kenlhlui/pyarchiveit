@@ -48,8 +48,21 @@ class HTTPXClient:
             httpx.TimeoutException: If the request times out
             Exception: For other errors
         """
+        # Ensure method is valid
+        if method.lower() not in {
+            "get",
+            "post",
+            "patch",
+            "delete",
+            "put",
+            "head",
+            "options",
+        }:
+            msg = f"Invalid HTTP method: {method}"
+            raise ValueError(msg)
+
         try:
-            response = getattr(self.client, method)(endpoint, **kwargs)
+            response = getattr(self.client, method.lower())(endpoint, **kwargs)
             response.raise_for_status()
             # Note: Handle HTTP errors (response.raise_for_status()) application side
             return response
