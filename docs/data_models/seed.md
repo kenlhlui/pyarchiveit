@@ -32,4 +32,4 @@ The following fields are **read-only** and cannot be set via user input:
 - `seed_type`
 - `canonical_url`
 
-These fields are automatically populated by the Archive-It API.
+These fields are automatically populated by the Archive-It system and should not be modified directly.
