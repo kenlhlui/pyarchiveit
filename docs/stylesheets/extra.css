@@ -10,6 +10,12 @@ code {
     font-size: 0.9em;
 }
 
+/* Make method signatures in API documentation smaller */
+h2.doc.doc-heading code,
+h3.doc.doc-heading code {
+    font-size: 0.7em !important;
+}
+
 /* extra.css */
 .md-header {
     background-color: #1E3765; /* Dark Blue */
