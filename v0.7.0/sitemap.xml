@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    <url>
+         <loc>https://kenlhlui.github.io/pyarchiveit/latest/</loc>
+         <lastmod>2025-11-08</lastmod>
+    </url>
+    <url>
+         <loc>https://kenlhlui.github.io/pyarchiveit/latest/getting-started/</loc>
+         <lastmod>2025-11-08</lastmod>
+    </url>
+    <url>
+         <loc>https://kenlhlui.github.io/pyarchiveit/latest/api/ArchiveItAPI/</loc>
+         <lastmod>2025-11-08</lastmod>
+    </url>
+    <url>
+         <loc>https://kenlhlui.github.io/pyarchiveit/latest/data_models/seed/</loc>
+         <lastmod>2025-11-08</lastmod>
+    </url>
+</urlset>
