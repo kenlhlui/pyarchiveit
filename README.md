@@ -21,11 +21,11 @@ uv add pyarchiveit
 
 ## 💡 Quick Start
 
-See the [Getting Started guide](https://kenlhlui.github.io/pyarchiveit/getting-started/) for detailed installation and initialization instructions.
+See the [Getting Started guide](https://kenlhlui.github.io/pyarchiveit/latest/getting-started/) for detailed installation and initialization instructions.
 
 ## 📚 Documentation
 
-Visit the [documentation site](https://kenlhlui.github.io/pyarchiveit/) for complete guides and API reference.
+Visit the [documentation site](https://kenlhlui.github.io/pyarchiveit/latest/) for complete guides and API reference.
 
 ## ⚫ Support
 For questions or support, please open an issue on the [GitHub repository](https://github.com/kenlhlui/pyarchiveit/issues).
