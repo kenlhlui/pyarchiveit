@@ -22,7 +22,7 @@ Or use [`uv`](https://github.com/astral-sh/uv) if you have it installed:
 uv add pyarchiveit
 ```
 
-> [! TIP]
+> [!TIP]
 > As a best practice (and since the project is under active development), you should pin the version of `pyarchiveit` when installing it, e.g. `pip install pyarchiveit==0.1.0` or `uv add pyarchiveit==0.1.0`, to avoid unexpected issues from future updates.
 
 ## 💡 Quick Start
