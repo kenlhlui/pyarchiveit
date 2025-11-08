@@ -32,7 +32,9 @@ class HTTPXClient:
             timeout=timeout,
         )
 
-    def request(self, method: str, endpoint: str, **kwargs: dict) -> httpx.Response:
+    def request(
+        self, method: str, endpoint: str, **kwargs: dict | bool
+    ) -> httpx.Response:
         """Make an HTTP request with standardized error handling.
 
         Args:
