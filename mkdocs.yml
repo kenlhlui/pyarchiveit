@@ -60,6 +60,8 @@ plugins:
               - "!^_"
               - "!close$" # Exclude close method
               - "^__init__$" # Exclude private methods (starting with _) except __init__
+            docstring_options:
+              ignore_init_summary: True
             extensions:
               - griffe_pydantic:
                   schema: true

@@ -8,6 +8,5 @@ The main client class for interacting with the Archive-it API.
 ::: pyarchiveit.api.ArchiveItAPI
     options:
       show_root_heading: false
-      show_docstring_description: false
       show_source: false
       heading_level: 2

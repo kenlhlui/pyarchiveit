@@ -8,4 +8,3 @@ The export module provides functionality to export Archive-It seed data to sprea
       show_root_heading: false
       show_source: false
       heading_level: 2
-      show_docstring_description: false
