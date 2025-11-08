@@ -1,7 +1,6 @@
 """A module for interacting with the Archive-it API."""
 
 import logging
-from typing import Any
 
 from httpx import Response
 from pydantic import ValidationError
@@ -62,18 +61,19 @@ class ArchiveItAPI:
         """Close the HTTP client and release resources."""
         self.httpx_client.close()
 
-    def _request(self, method: str, endpoint: str) -> Response:
+    def _request(self, method: str, endpoint: str, **kwargs: dict | bool) -> Response:
         """Make an HTTP request using the HTTPXClient. Mainly for internal/Debug use.
 
         Args:
             method (str): HTTP method (get, post, patch, delete, etc.)
             endpoint (str): API endpoint
+            **kwargs (dict): Additional keyword arguments to pass to the request.
 
         Returns:
             httpx.Response: The HTTP response
 
         """
-        return self.httpx_client.request(method, endpoint)
+        return self.httpx_client.request(method, endpoint, **kwargs)
 
     def _validate_auth(self) -> None:
         """Validate authentication credentials."""
@@ -130,63 +130,25 @@ class ArchiveItAPI:
             logger.error(msg)
             raise ValueError(msg)
 
-        # Normalize input to a list
-        collection_ids = (
-            [collection_id] if isinstance(collection_id, (str, int)) else collection_id
-        )
+        logger.info(f"Fetching seeds for collection ID(s): {str(collection_id)}")
 
-        all_seeds = []
-
-        for coll_id in collection_ids:
-            logger.info(f"Fetching seeds for collection ID: {coll_id}")
-
-            # Build params dict, only including non-None optional parameters
-            params = {
-                "collection": coll_id,
-                "limit": limit,
-                "format": format,
-            }
-            if sort:
-                params["sort"] = sort
-            if pluck:
-                params["pluck"] = pluck
-
-            response = self.httpx_client.get("seed", params=params)
-
-            data = response.json()
-
-            # API returns a list of seeds
-            if isinstance(data, list):
-                if pluck:
-                    # When pluck is used, API returns a list of simple values
-                    # No validation needed, just extend the list
-                    all_seeds.extend(data)
-                    logger.info(
-                        f"Retrieved {len(data)} plucked values (field: {pluck}) for collection ID: {coll_id}"
-                    )
-                else:
-                    # Validate each seed using Pydantic
-                    validated_seeds: list[dict[str, Any]] = [
-                        ModelValidator.validate(
-                            SeedKeys, seed, f"collection {coll_id}", source="api"
-                        ).model_dump()
-                        for seed in data
-                    ]
-                    all_seeds.extend(validated_seeds)
-                    logger.info(
-                        f"Retrieved {len(data)} seeds for collection ID: {coll_id}"
-                    )
-            else:
-                logger.warning(
-                    f"Unexpected response format for collection ID {coll_id}: {type(data)}"
-                )
-
-        # Return plucked values as-is, or validate full seed objects
+        # Build params dict, only including non-None optional parameters
+        params = {
+            "collection": collection_id,
+            "limit": limit,
+            "format": format,
+        }
+        if sort:
+            params["sort"] = sort
         if pluck:
-            return all_seeds
-        return ModelValidator.validate_list(
-            SeedKeys, all_seeds, "all seeds", source="api"
-        )
+            params["pluck"] = pluck
+
+        response = self.httpx_client.get("seed", params=params)
+
+        data = response.json()
+        if pluck:
+            return data  # Return list of plucked field values
+        return ModelValidator.validate_list(SeedKeys, data, "all seeds", source="api")
 
     def update_seed_metadata(
         self,
