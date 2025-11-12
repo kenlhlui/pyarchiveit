@@ -1,8 +1,15 @@
 {% extends "base.html" %}
 
 {% block outdated %}
-  You're not viewing the latest version.
-  <a href="{{ '../' ~ base_url }}">
-    <strong>Click here to go to latest.</strong>
-  </a>
+  {% if config.extra.version_title == "dev" %}
+    You're viewing the <strong>dev</strong> version (unstable).
+    <a href="{{ '../' ~ base_url }}">
+      <strong>Click here to go to latest stable version.</strong>
+    </a>
+  {% else %}
+    You're not viewing the latest version.
+    <a href="{{ '../' ~ base_url }}">
+      <strong>Click here to go to latest.</strong>
+    </a>
+  {% endif %}
 {% endblock %}
