@@ -16,6 +16,9 @@ The `Seed` model represents the complete seed object returned by the Archive-It 
 
 
 
+!!! note "`crawl_definition` can be `None`"
+    The Archive-It API leaves `crawl_definition` out of the response when a seed is created, so the seed returned by `create_seed()` has `crawl_definition=None`.
+
 ### Protected Fields
 
 The following fields are **read-only** and cannot be set via user input:
