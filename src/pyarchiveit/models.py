@@ -67,8 +67,10 @@ class Seed(_SeedValidationMixin):
     id: int = Field(..., description="Unique identifier for the seed")
     url: str = Field(..., description="URL of the seed")
     collection: int = Field(..., description="Collection ID the seed belongs to")
-    crawl_definition: int = Field(
-        ..., description="Crawl definition ID the seed belongs to"
+    # Except this one: the create-seed response omits it.
+    crawl_definition: int | None = Field(
+        None,
+        description="Crawl definition ID the seed belongs to. `None` when the API omits it, as in the `create_seed()` response.",
     )
     active: bool = Field(..., description="Indicates if the seed is active")
     deleted: bool = Field(..., description="Indicates if the seed is deleted")
